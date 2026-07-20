@@ -12,6 +12,13 @@ npm run preview      # OpenNext + workerd 預覽
 npm run deploy       # 構建並部署到 Cloudflare Workers
 ```
 
+本地媒體走同域代理（`.env.local`）：
+
+- 瀏覽器請求：`/media/...`
+- Next rewrite 上游：`R2_MEDIA_UPSTREAM`（默認 r2.dev 公網桶）
+
+這樣可避開本機 DNS 無法解析 `media.haijieliu.com` 導致的音視頻加載失敗。修改 `.env.local` / `next.config.ts` 後需重啟 `npm run dev`。
+
 ## 媒體上傳（R2 `haijie-media`）
 
 ```bash
@@ -20,11 +27,11 @@ npm run upload:media -- --videos  # 另含 videos（約 5GB）
 npm run upload:media -- --only videos
 ```
 
-臨時公開域名（開發用）：
+媒體 CDN：
 
-`https://pub-61e673eb650a4aae97101bc4eb2334df.r2.dev`
+`https://media.haijieliu.com`（R2 custom domain，已綁定）
 
-生產建議綁定：`media.haijieliu.com`（需 zone 在同一 Cloudflare 賬號）。
+開發備用：`https://pub-61e673eb650a4aae97101bc4eb2334df.r2.dev`
 
 ## 環境變量
 

@@ -115,6 +115,8 @@ export default function Footer() {
         <audio
           id="songsforhaijie"
           ref={player}
+          crossOrigin="anonymous"
+          preload="metadata"
           onPlay={() => setPlay(true)}
           onPause={onPause}
           onEnded={onEnded}

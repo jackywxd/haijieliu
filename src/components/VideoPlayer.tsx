@@ -40,21 +40,29 @@ function VideoJS({
 
   return (
     <div data-vjs-player>
-      <video ref={videoRef} className="video-js vjs-big-play-centered" />
+      <video
+        ref={videoRef}
+        className="video-js vjs-big-play-centered"
+        crossOrigin="anonymous"
+        playsInline
+      />
     </div>
   );
 }
 
 export default function VideoPlayer({ video }: { video: VideoMeta }) {
   const videoJsOptions: VideoJsOptions = {
-    autoplay: true,
+    autoplay: false,
     controls: true,
     responsive: true,
     fluid: true,
+    preload: "metadata",
     html5: {
       vhs: {
         overrideNative: !videojs.browser.IS_SAFARI,
       },
+      nativeAudioTracks: false,
+      nativeVideoTracks: false,
     },
     sources: [
       {
@@ -68,7 +76,7 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
     <div style={{ paddingTop: "1em" }}>
       <div>{video.year}</div>
       <div>{video.description}</div>
-      <VideoJS options={videoJsOptions} />
+      <VideoJS key={video.link} options={videoJsOptions} />
     </div>
   );
 }

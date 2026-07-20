@@ -11,8 +11,15 @@ const pic01 = mediaUrl("images/pic01.jpg");
 const pic02 = mediaUrl("images/pic02.jpg");
 
 const settings = {
-  images: ["b01", "b02", "b03", "b04", "b05", "b06"].map((id) => ({
-    url: mediaUrl(`images/${id}.jpg`),
+  images: [
+    "b01.jpg",
+    "b02.jpg",
+    "b03.jpg",
+    "b04.JPG",
+    "b05.JPG",
+    "b06.JPG",
+  ].map((name) => ({
+    url: mediaUrl(`images/${name}`),
     position: "center",
   })),
   delay: 10000,
@@ -150,8 +157,13 @@ export default function SongsPage() {
             style={{ backgroundImage: `url(${pic01})` }}
             onClick={playSunny}
           >
-            <audio id="sunny" ref={sunny}>
-              <source src={goinghome} />
+            <audio
+              id="sunny"
+              ref={sunny}
+              crossOrigin="anonymous"
+              preload="metadata"
+              src={goinghome}
+            >
               Your browser does not support the <code>audio</code> element.
             </audio>
             {play !== "sunny" ? (
@@ -178,8 +190,13 @@ export default function SongsPage() {
             style={{ backgroundImage: `url(${pic02})` }}
             onClick={playLamby}
           >
-            <audio id="lamby" ref={lamby}>
-              <source src={raisemeup} />
+            <audio
+              id="lamby"
+              ref={lamby}
+              crossOrigin="anonymous"
+              preload="metadata"
+              src={raisemeup}
+            >
               Your browser does not support the <code>audio</code> element.
             </audio>
             {play !== "lamby" ? (
