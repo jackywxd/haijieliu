@@ -13,12 +13,14 @@
   },
   "workers_dev": true,
   "preview_urls": true,
+  "routes": [
+    { "pattern": "haijieliu.com", "custom_domain": true },
+    { "pattern": "www.haijieliu.com", "custom_domain": true }
+  ],
   "vars": {
     "R2_CDN_URL": "https://media.haijieliu.com",
     "API_URL": "/api"
   },
-  // Attach apex/www in Dashboard → Workers → haijie-web → Domains
-  // (CLI custom_domain deploy failed with domains/records API error).
   "d1_databases": [
     {
       "binding": "DB",

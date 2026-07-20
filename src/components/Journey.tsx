@@ -110,7 +110,7 @@ export default function Journey({ timeout }: { timeout?: boolean }) {
   return (
     <header id="journey-header" style={timeout ? { display: "none" } : {}}>
       <div className="logo">
-        <img src={mediaUrl("images/website-icon.png")} alt="Haijie" />
+        <img src={mediaUrl("images/icons/website-icon.png")} alt="Haijie" />
       </div>
       <Chapter nav={nav} />
       <nav>

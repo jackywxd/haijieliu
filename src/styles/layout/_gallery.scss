@@ -55,6 +55,7 @@ img {
       background-repeat: no-repeat;
       background-size: cover;
       border: 0;
+      display: block;
       height: 100%;
       left: 0;
       position: absolute;
@@ -133,9 +134,12 @@ img {
 
     .thumb {
       @include vendor('transition-delay', '#{$defaultDelay}');
-      height: calc(100vh / ($rows + $pad) - calc(_size(header) / $rows));
+      box-sizing: border-box;
+      flex: 0 0 calc(100% / #{$columns});
+      width: calc(100% / #{$columns});
+      max-width: calc(100% / #{$columns});
+      height: calc(#{100vh / ($rows + $pad)} - #{_size(header) / $rows});
       min-height: $minHeight;
-      width: calc(100% / $columns);
 
       @for $i from 1 through (($rows * $columns) * 1.5) {
         &:nth-child(#{$i}) {

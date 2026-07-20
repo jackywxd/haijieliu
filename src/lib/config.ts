@@ -8,6 +8,10 @@ export const config = {
 
 export function mediaUrl(path: string): string {
   const base = config.r2CdnUrl.replace(/\/$/, "");
-  const clean = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${clean}`;
+  const clean = path.replace(/^\/+/, "");
+  const encoded = clean
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+  return `${base}/${encoded}`;
 }

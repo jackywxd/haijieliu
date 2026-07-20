@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { load } from "js-yaml";
 import { mediaUrl } from "./config";
 
@@ -17,18 +15,48 @@ type RawVideo = {
   appearance?: string;
 };
 
-export function getVideos(): VideoMeta[] {
-  const filePath = path.join(process.cwd(), "src/content/videos.yaml");
-  const raw = fs.readFileSync(filePath, "utf8");
-  const items = load(raw) as RawVideo[];
+// Inlined so Cloudflare Workers don't need filesystem access at runtime.
+// Keep in sync with src/content/videos.yaml
+const VIDEOS_YAML = `
+- year: 2020
+  link: /videos/Haijie-stream-4K.m3u8
+  description: 這一世 太漫長卻止步咫尺天涯間， 仍記 那紅葉滿天飛舞時節
+  appearance: src/assets/images/b01.jpg
+- year: 2021
+  link: /videos/Haijie-2021.m3u8
+  description: 不知 不覺 時光 流轉又一年，煙花 為誰 絢爛 今宵燈火闌珊； 世事依然似水變遷， 伊人嘆 嘆不盡相思苦憶華年
+  appearance: src/assets/images/b01.jpg
+- year: 2022
+  link: /videos/Haijie-2022.m3u8
+  description: 我多想能多陪你一場，把後半生的風景對妳講；在每個寂靜的夜裡我會想，那些關於你的愛恨情長
+  appearance: src/assets/images/b01.jpg
+- year: 2023
+  link: /videos/Haijie-2023.m3u8
+  description: 你是落在我肩上的云 随风飘飘吹来了回忆 看那往事在心里堆积 从此只剩我一个人孤寂
+  appearance: src/assets/images/b01.jpg
+- year: 2024
+  link: /videos/Haijie-2024.m3u8
+  description: 就算換了時空變了容顏 我依然記得你眼裡的依戀 縱然聚散由命也要用心感動天
+  appearance: src/assets/images/b01.jpg
+- year: 2025
+  link: /videos/Haijie-2025.m3u8
+  description: 天邊走來走來一片片雲彩，是你把眷戀落在我心懷；風兒帶走一片片雲彩，是你把牽掛記在我心懷
+  appearance: src/assets/images/b01.jpg
+`;
 
+function normalizeLink(link: string): string {
+  return link.startsWith("http")
+    ? link
+    : mediaUrl(link.replace(/^\/videos\//, "videos/"));
+}
+
+export function getVideos(): VideoMeta[] {
+  const items = load(VIDEOS_YAML) as RawVideo[];
   return items.map((item) => ({
     year: item.year,
     description: item.description,
     appearance: item.appearance,
-    link: item.link.startsWith("http")
-      ? item.link
-      : mediaUrl(item.link.replace(/^\/videos\//, "videos/")),
+    link: normalizeLink(item.link),
   }));
 }
 
