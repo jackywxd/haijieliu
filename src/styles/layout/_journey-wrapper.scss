@@ -1,0 +1,39 @@
+///
+/// Dimension by HTML5 UP
+/// html5up.net | @ajlkn
+/// Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+///
+
+/* Wrapper */
+
+#journey-wrapper {
+  @include vendor('display', 'flex');
+  @include vendor('flex-direction', 'column');
+  @include vendor('align-items', 'center');
+  @include vendor('justify-content', 'space-between');
+  position: relative;
+  width: 100%;
+  padding: 4em 2em;
+  z-index: 3;
+
+  &:before {
+    content: '';
+    display: block;
+  }
+
+  @include breakpoint(xlarge) {
+    padding: 3em 2em;
+  }
+
+  @include breakpoint(small) {
+    padding: 1em 1em;
+  }
+
+  @include breakpoint(xsmall) {
+    padding: 1em;
+  }
+
+  &.page {
+    @include vendor('justify-content', 'flex-start');
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "haijie-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "R2_CDN_URL": "https://pub-61e673eb650a4aae97101bc4eb2334df.r2.dev",
+    "API_URL": "/api"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "haijie-messages",
+      "database_id": "bdb6b817-4902-4129-b848-8511c8fbd978"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "haijie-media"
+    }
+  ]
+}

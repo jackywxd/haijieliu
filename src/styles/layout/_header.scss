@@ -1,0 +1,58 @@
+///
+/// Eventually by HTML5 UP
+/// html5up.net | @ajlkn
+/// Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+///
+
+/* Header */
+
+#header {
+  h1 {
+    font-size: 3.25em;
+    margin: 0 0 (_size(element-margin) * 0.275) 0;
+  }
+
+  p {
+    font-size: 1.35em;
+    line-height: 1.65em;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  .row {
+    display: flex;
+  }
+
+  .column {
+    width: 100%;
+  }
+
+  @include breakpoint('<=small') {
+    h1 {
+      font-size: 2em;
+    }
+
+    p {
+      font-size: 1em;
+    }
+   
+    .row {
+      display: inline;
+    }
+    .column {
+      padding-bottom: 1em;
+      width: 100%
+    }
+  }
+
+  @include breakpoint('<=xlarge') {
+    padding: 3em 3.5em 3.5em 3.5em;
+  }
+
+  @include breakpoint('<=xsmall') {
+    padding: 3em 3em 3em 3em;
+    margin: 0 0 (_size(element-margin) * 0.3) 0;
+  }
+}

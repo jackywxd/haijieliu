@@ -1,0 +1,122 @@
+///
+/// Eventually by HTML5 UP
+/// html5up.net | @ajlkn
+/// Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+///
+
+/* Footer */
+
+#footer {
+  @include vendor('transition', 'opacity 0.5s ease-in-out');
+  padding: 2em 1em 1em 1em;
+  color: _palette(fg-light);
+  width: 100%;
+  opacity: 0.5;
+  position: relative;
+  z-index: 10011;
+  justify-content: center;
+
+  .wave {
+    position: absolute;
+    max-width: 500px;
+    opacity: 1;
+    bottom: 0;
+    width: max-content;
+    .disable {
+      display: none;
+    }
+  }
+  .faIcon {
+    @include vendor('appearance', 'none');
+    @include vendor(
+      'transition',
+      (
+        'background-color #{_duration(transition)} ease-in-out',
+        'color #{_duration(transition)} ease-in-out',
+        'opacity #{_duration(transition)} ease-in-out'
+      )
+    );
+  }
+  .playbutton {
+    @include vendor('appearance', 'none');
+    @include vendor(
+      'transition',
+      (
+        'background-color #{_duration(transition)} ease-in-out',
+        'color #{_duration(transition)} ease-in-out',
+        'opacity #{_duration(transition)} ease-in-out'
+      )
+    );
+    background-color: 'transparent';
+    border-radius: _size(border-radius);
+    // position: absolute;
+    color: _palette(accent, fg-bold) !important;
+    // display: inline-block;
+    font-weight: _font(weight-bold);
+    height: _size(element-height);
+    line-height: _size(element-height);
+    padding: 0 1.125em;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    margin: 0 0 (_size(element-margin) * 0.25) 0;
+    z-index: 20000;
+
+    @include breakpoint('<=xsmall') {
+      padding: 0;
+    }
+  }
+  .icons {
+    margin: 0 0 (_size(element-margin) * 0.25) 0;
+  }
+
+  .copyright {
+    font-size: 0.8em;
+    list-style: none;
+    padding: 0;
+
+    li {
+      border-left: solid 1px _palette(border2);
+      display: inline-block;
+      line-height: 1em;
+      margin: 0 0 0 0.75em;
+      padding: 0 0 0 0.75em;
+
+      &:first-child {
+        border-left: 0;
+        margin-left: 0;
+        padding-left: 0;
+      }
+    }
+
+    a {
+      color: inherit;
+    }
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  @include breakpoint('<=xlarge') {
+    bottom: 2.5em;
+  }
+
+  @include breakpoint('<=small') {
+    bottom: 2em;
+  }
+
+  @include breakpoint('<=xxsmall') {
+    bottom: 1em;
+  }
+
+  @include breakpoint('short') {
+    bottom: auto;
+    margin: (_size(element-margin) * 0.5) 0 0 0;
+    position: relative;
+  }
+}

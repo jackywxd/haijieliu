@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# haijie-web
 
-## Getting Started
+Haijie 紀念網站 — Next.js + Cloudflare Workers（OpenNext）重構版。
 
-First, run the development server:
+舊站（Gatsby）倉庫：`../haijie`
+
+## 開發
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev          # Next.js 本地開發
+npm run preview      # OpenNext + workerd 預覽
+npm run deploy       # 構建並部署到 Cloudflare Workers
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 媒體上傳（R2 `haijie-media`）
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run upload:media              # music + images + icons
+npm run upload:media -- --videos  # 另含 videos（約 5GB）
+npm run upload:media -- --only videos
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+臨時公開域名（開發用）：
 
-## Learn More
+`https://pub-61e673eb650a4aae97101bc4eb2334df.r2.dev`
 
-To learn more about Next.js, take a look at the following resources:
+生產建議綁定：`media.haijieliu.com`（需 zone 在同一 Cloudflare 賬號）。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 環境變量
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+見 `.env.local`：
 
-## Deploy on Vercel
+- `NEXT_PUBLIC_R2_CDN_URL`
+- `NEXT_PUBLIC_API_URL=/api`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## D1
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Database：`haijie-messages`  
+Schema：`migrations/0001_messages.sql`（已 remote apply）
