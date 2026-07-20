@@ -1,0 +1,11 @@
+public/media/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.m4a filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.m4s filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.ts filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.JPG filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.png filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.webp filter=lfs diff=lfs merge=lfs -text
+public/media/**/*.gif filter=lfs diff=lfs merge=lfs -text

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Upload media from the Gatsby project into R2 bucket haijie-media.
+ * Upload media from public/media into R2 bucket haijie-media.
  *
  * Usage:
- *   node scripts/upload-r2.mjs                # music + images + icons
- *   node scripts/upload-r2.mjs --videos       # also upload videos (~5GB)
+ *   node scripts/upload-r2.mjs                # music + images
+ *   node scripts/upload-r2.mjs --videos       # also upload videos
  *   node scripts/upload-r2.mjs --only videos
  *   node scripts/upload-r2.mjs --dry-run
  */
@@ -13,7 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const BUCKET = "haijie-media";
-const SOURCE = path.resolve(process.cwd(), "../haijie");
+const SOURCE = path.resolve(process.cwd(), "public/media");
 const CONCURRENCY = Number(process.env.UPLOAD_CONCURRENCY || 4);
 const dryRun = process.argv.includes("--dry-run");
 const only = (() => {
@@ -29,7 +29,11 @@ function walk(dir, filter) {
   if (!fs.existsSync(dir)) return [];
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === ".wrangler" || entry.name === "node_modules" || entry.name === ".DS_Store") {
+    if (
+      entry.name === ".wrangler" ||
+      entry.name === "node_modules" ||
+      entry.name === ".DS_Store"
+    ) {
       continue;
     }
     const full = path.join(dir, entry.name);
@@ -46,33 +50,25 @@ function addJob(localPath, key) {
 function plan() {
   const groups = {
     music: () => {
-      for (const f of walk(path.join(SOURCE, "src/assets/music"), (p) =>
-        /\.(mp3|m4a)$/i.test(p)
+      for (const f of walk(path.join(SOURCE, "music"), (p) =>
+        /\.(mp3|m4a)$/i.test(p),
       )) {
         addJob(f, `music/${path.basename(f)}`);
       }
     },
     images: () => {
-      for (const f of walk(path.join(SOURCE, "src/assets/gallery"))) {
-        addJob(f, `images/gallery/${path.basename(f)}`);
-      }
-      for (const f of walk(path.join(SOURCE, "src/assets/bg"))) {
-        addJob(f, `images/bg/${path.basename(f)}`);
-      }
-      for (const f of walk(path.join(SOURCE, "src/assets/images"), (p) =>
-        /\.(jpe?g|png|gif|webp|svg)$/i.test(p)
+      for (const f of walk(path.join(SOURCE, "images"), (p) =>
+        /\.(jpe?g|png|gif|webp|svg)$/i.test(p),
       )) {
-        addJob(f, `images/${path.basename(f)}`);
-      }
-      for (const f of walk(path.join(SOURCE, "src/assets/img"))) {
-        addJob(f, `images/icons/${path.basename(f)}`);
+        const rel = path.relative(path.join(SOURCE, "images"), f)
+          .split(path.sep)
+          .join("/");
+        addJob(f, `images/${rel}`);
       }
     },
     videos: () => {
-      const root = path.join(SOURCE, "static/videos");
-      for (const f of walk(root, (p) =>
-        /\.(m3u8|m4s|mp4|ts)$/i.test(p)
-      )) {
+      const root = path.join(SOURCE, "videos");
+      for (const f of walk(root, (p) => /\.(m3u8|m4s|mp4|ts)$/i.test(p))) {
         const rel = path.relative(root, f).split(path.sep).join("/");
         addJob(f, `videos/${rel}`);
       }
@@ -98,8 +94,16 @@ function putObject({ localPath, key }) {
     }
     const child = spawn(
       "wrangler",
-      ["r2", "object", "put", `${BUCKET}/${key}`, "--file", localPath, "--remote"],
-      { stdio: ["ignore", "pipe", "pipe"] }
+      [
+        "r2",
+        "object",
+        "put",
+        `${BUCKET}/${key}`,
+        "--file",
+        localPath,
+        "--remote",
+      ],
+      { stdio: ["ignore", "pipe", "pipe"] },
     );
     let err = "";
     child.stderr.on("data", (d) => {
@@ -113,6 +117,9 @@ function putObject({ localPath, key }) {
 }
 
 async function runPool() {
+  if (!fs.existsSync(SOURCE)) {
+    throw new Error(`Media directory missing: ${SOURCE}`);
+  }
   plan();
   console.log(`Uploading ${jobs.length} objects (concurrency=${CONCURRENCY})`);
   let done = 0;
@@ -136,7 +143,9 @@ async function runPool() {
   }
 
   await Promise.all(
-    Array.from({ length: Math.min(CONCURRENCY, jobs.length) }, () => worker())
+    Array.from({ length: Math.min(CONCURRENCY, jobs.length || 1) }, () =>
+      worker(),
+    ),
   );
   console.log(`Done. uploaded=${done} failed=${failed} total=${jobs.length}`);
   if (failed) process.exitCode = 1;

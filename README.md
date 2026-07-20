@@ -1,8 +1,6 @@
 # haijie-web
 
-Haijie 紀念網站 — Next.js + Cloudflare Workers（OpenNext）重構版。
-
-舊站（Gatsby）倉庫：`../haijie`
+Haijie 紀念網站 — Next.js + Cloudflare Workers（OpenNext）。
 
 ## 開發
 
@@ -12,35 +10,43 @@ npm run preview      # OpenNext + workerd 預覽
 npm run deploy       # 構建並部署到 Cloudflare Workers
 ```
 
-本地媒體走同域代理（`.env.local`）：
+## 媒體資源
 
-- 瀏覽器請求：`/media/...`
-- Next rewrite 上游：`R2_MEDIA_UPSTREAM`（默認 r2.dev 公網桶）
+媒體存放於本倉庫 `public/media/`，以 **Git LFS** 管理大文件：
 
-這樣可避開本機 DNS 無法解析 `media.haijieliu.com` 導致的音視頻加載失敗。修改 `.env.local` / `next.config.ts` 後需重啟 `npm run dev`。
-
-## 媒體上傳（R2 `haijie-media`）
-
-```bash
-npm run upload:media              # music + images + icons
-npm run upload:media -- --videos  # 另含 videos（約 5GB）
-npm run upload:media -- --only videos
+```
+public/media/
+  music/
+  images/          # 含 gallery/、bg/、icons/
+  videos/          # HLS 片段（LFS）
 ```
 
-媒體 CDN：
+```bash
+# 首次克隆後拉取 LFS 對象
+git lfs install
+git lfs pull
 
-`https://media.haijieliu.com`（R2 custom domain，已綁定）
+# 新增圖片後更新清單（prebuild 會自動執行）
+npm run sync:media
 
-開發備用：`https://pub-61e673eb650a4aae97101bc4eb2334df.r2.dev`
+# 上傳到 R2（可選，CDN 用）
+npm run upload:media
+npm run upload:media -- --videos
+```
+
+瀏覽器統一請求 `/media/...`：
+- 優先使用 `public/media` 本地文件
+- 缺失時 fallback rewrite 到 R2 CDN
 
 ## 環境變量
 
 見 `.env.local`：
 
-- `NEXT_PUBLIC_R2_CDN_URL`
+- `NEXT_PUBLIC_R2_CDN_URL`（本地建議 `/media`）
+- `R2_MEDIA_UPSTREAM`（fallback 上游）
 - `NEXT_PUBLIC_API_URL=/api`
 
 ## D1
 
 Database：`haijie-messages`  
-Schema：`migrations/0001_messages.sql`（已 remote apply）
+Schema：`migrations/0001_messages.sql`

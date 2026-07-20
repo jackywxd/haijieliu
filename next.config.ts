@@ -24,12 +24,15 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   async rewrites() {
-    return [
-      {
-        source: "/media/:path*",
-        destination: `${mediaUpstream}/:path*`,
-      },
-    ];
+    // fallback: serve public/media/* first; proxy to R2 only if missing
+    return {
+      fallback: [
+        {
+          source: "/media/:path*",
+          destination: `${mediaUpstream}/:path*`,
+        },
+      ],
+    };
   },
 };
 
