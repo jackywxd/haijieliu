@@ -5,6 +5,7 @@ import { mediaUrl } from "@/lib/config";
 import galleryImages from "@/content/gallery-images.json";
 
 const photos = galleryImages.map((name) => ({
+  thumbSrc: mediaUrl(`images/gallery-thumb/${name}`),
   src: mediaUrl(`images/gallery/${name}`),
   alt: name.replace(/\.[^.]+$/, ""),
 }));
@@ -43,13 +44,22 @@ export default function GalleryPage() {
               className="img"
               onClick={() => setCurrent(index)}
               aria-label={photo.alt}
-              style={{
-                backgroundImage: `url(${photo.src})`,
-                cursor: "pointer",
-                padding: 0,
-                border: 0,
-              }}
-            />
+              style={{ cursor: "pointer", padding: 0, border: 0 }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photo.thumbSrc}
+                alt={photo.alt}
+                loading="lazy"
+                decoding="async"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+            </button>
           </article>
         ))}
       </div>
