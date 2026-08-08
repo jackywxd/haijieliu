@@ -37,26 +37,24 @@ const gallery = listFiles(path.join(mediaRoot, "images/gallery"), (name) =>
 writeJson(path.join(contentDir, "bg-images.json"), bg);
 writeJson(path.join(contentDir, "gallery-images.json"), gallery);
 
-// Ensure videos.yaml references only m3u8 files that exist locally (or keep all YAML entries)
-const videosYamlPath = path.join(contentDir, "videos.yaml");
+// Ensure videos.json references only m3u8 files that exist locally
+const videosJsonPath = path.join(contentDir, "videos.json");
 const localM3u8 = new Set(
   listFiles(path.join(mediaRoot, "videos"), (name) =>
     name.toLowerCase().endsWith(".m3u8"),
   ),
 );
 
-if (fs.existsSync(videosYamlPath) && localM3u8.size) {
-  const missing = [];
-  const yaml = fs.readFileSync(videosYamlPath, "utf8");
-  for (const match of yaml.matchAll(/link:\s*(\/videos\/[^\s]+)/g)) {
-    const file = path.basename(match[1]);
-    if (!localM3u8.has(file)) missing.push(file);
-  }
+if (fs.existsSync(videosJsonPath) && localM3u8.size) {
+  const videos = JSON.parse(fs.readFileSync(videosJsonPath, "utf8"));
+  const missing = videos
+    .map((v) => path.basename(v.link))
+    .filter((file) => !localM3u8.has(file));
   if (missing.length) {
-    console.warn("videos.yaml references missing local playlists:");
+    console.warn("videos.json references missing local playlists:");
     for (const m of missing) console.warn(`  - ${m}`);
   } else {
-    console.log(`videos.yaml playlists OK (${localM3u8.size} local .m3u8)`);
+    console.log(`videos.json playlists OK (${localM3u8.size} local .m3u8)`);
   }
 }
 
