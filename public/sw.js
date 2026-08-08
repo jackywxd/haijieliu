@@ -1,4 +1,4 @@
-const CACHE = "haijie-core-v2";
+const CACHE = "haijie-core-v3";
 const PRECACHE = ["/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -27,6 +27,13 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // Never cache API responses or RSC data fetches — always hit the network
+  // so new messages / server data show up without a SW version bump.
+  if (url.pathname.startsWith("/api/") || url.searchParams.has("_rsc")) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   // Network-first for navigations; never cache error pages as "/"
   if (request.mode === "navigate") {
