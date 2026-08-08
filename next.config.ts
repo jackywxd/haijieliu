@@ -10,6 +10,18 @@ const mediaUpstream = (
 ).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  // The HTML5-UP template's SCSS still uses @import and legacy global
+  // functions (mix, darken, if, ...). Silence the Dart Sass deprecation
+  // warnings until the styles are migrated to @use/@forward.
+  sassOptions: {
+    silenceDeprecations: [
+      "import",
+      "global-builtin",
+      "color-functions",
+      "if-function",
+      "slash-div",
+    ],
+  },
   images: {
     remotePatterns: [
       {

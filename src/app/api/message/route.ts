@@ -27,6 +27,11 @@ export async function GET() {
   return NextResponse.json(messages);
 }
 
+const MAX_NAME_LENGTH = 100;
+const MAX_MESSAGE_LENGTH = 2000;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX = 3;
+
 export async function POST(request: Request) {
   const body = (await request.json()) as {
     from?: string;
@@ -34,15 +39,34 @@ export async function POST(request: Request) {
     email?: string;
   };
 
-  const name = body.from?.trim() ?? "";
-  const message = body.message?.trim();
+  const name = (body.from?.trim() ?? "").slice(0, MAX_NAME_LENGTH);
+  const message = body.message?.trim().slice(0, MAX_MESSAGE_LENGTH);
 
   if (!message) {
     return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
 
-  const createdAt = new Date().toISOString();
   const { env } = await getCloudflareContext({ async: true });
+  const sourceIp = request.headers.get("cf-connecting-ip");
+
+  if (sourceIp) {
+    const cutoff = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+    const { results } = await env.DB.prepare(
+      `SELECT COUNT(*) as count FROM messages
+       WHERE source_ip = ? AND created_at > ?`,
+    )
+      .bind(sourceIp, cutoff)
+      .all<{ count: number }>();
+
+    if ((results?.[0]?.count ?? 0) >= RATE_LIMIT_MAX) {
+      return NextResponse.json(
+        { error: "too many messages, please try again later" },
+        { status: 429 },
+      );
+    }
+  }
+
+  const createdAt = new Date().toISOString();
   await env.DB.prepare(
     `INSERT INTO messages
       (name, email, message, created_at, pk, sk, approved, origin, referer, source_ip, user_agent)

@@ -3,30 +3,48 @@
 import { useState } from "react";
 import { config } from "@/lib/config";
 
+type Status = "idle" | "sending" | "success" | "error";
+
 export default function EmailForm() {
   const [text, setText] = useState("");
   const [from, setFrom] = useState("");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setMessage("Your message sent...Thank you!");
 
-    if (text.length > 0) {
-      fetch(`${config.apiUrl}/message`, {
+    if (!text.trim() || status === "sending") return;
+
+    setStatus("sending");
+
+    try {
+      const response = await fetch(`${config.apiUrl}/message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ from, message: text }),
       });
-    }
 
-    setTimeout(() => {
-      setMessage("");
+      if (!response.ok) throw new Error(await response.text());
+
+      setStatus("success");
       setText("");
       setFrom("");
-    }, 3000);
+    } catch {
+      setStatus("error");
+    } finally {
+      setTimeout(() => setStatus("idle"), 3000);
+    }
   };
+
+  const message =
+    status === "sending"
+      ? "Sending..."
+      : status === "success"
+        ? "Your message sent...Thank you!"
+        : status === "error"
+          ? "Something went wrong, please try again."
+          : "";
 
   return (
     <form id="signup-form" onSubmit={onSubmit} method="post" action="#">
@@ -34,6 +52,7 @@ export default function EmailForm() {
         type="text"
         name="text"
         id="text"
+        required
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Send message to Haijie..."
@@ -46,8 +65,12 @@ export default function EmailForm() {
         onChange={(e) => setFrom(e.target.value)}
         placeholder="Name"
       />
-      <input type="submit" value="Send" />
-      <span className={`${message ? "visible success" : ""} message`}>
+      <input type="submit" value="Send" disabled={status === "sending"} />
+      <span
+        className={`${message ? "visible" : ""} ${
+          status === "error" ? "failure" : "success"
+        } message`}
+      >
         {message}
       </span>
     </form>

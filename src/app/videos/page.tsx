@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getVideos } from "@/lib/videos";
+
+export const metadata: Metadata = {
+  title: "Memorial Videos | In Loving Memory Haijie",
+  description: "Yearly memorial videos in loving memory of Haijie.",
+};
 
 export default function VideosPage() {
   const videos = getVideos();
