@@ -27,6 +27,26 @@ function writeJson(filePath, data) {
   console.log(`wrote ${path.relative(root, filePath)} (${data.length} items)`);
 }
 
+// Refuse to overwrite a non-empty manifest with an empty one — that pattern
+// means public/media wasn't found (missing Git LFS pull, moved directory,
+// etc.), not that the media genuinely disappeared.
+function writeJsonGuarded(filePath, data, label) {
+  if (data.length === 0) {
+    const existing = fs.existsSync(filePath)
+      ? JSON.parse(fs.readFileSync(filePath, "utf8"))
+      : [];
+    if (existing.length > 0) {
+      console.error(
+        `ERROR: found 0 ${label} files, but ${path.relative(root, filePath)} already lists ${existing.length}.\n` +
+          `Refusing to overwrite with an empty manifest — this usually means public/media is missing ` +
+          `(e.g. Git LFS content wasn't pulled). Run 'git lfs pull' and check the directory exists, then retry.`,
+      );
+      process.exit(1);
+    }
+  }
+  writeJson(filePath, data);
+}
+
 const bg = listFiles(path.join(mediaRoot, "images/bg"), (name) =>
   IMAGE_EXT.has(path.extname(name).toLowerCase()),
 );
@@ -34,8 +54,8 @@ const gallery = listFiles(path.join(mediaRoot, "images/gallery"), (name) =>
   IMAGE_EXT.has(path.extname(name).toLowerCase()),
 );
 
-writeJson(path.join(contentDir, "bg-images.json"), bg);
-writeJson(path.join(contentDir, "gallery-images.json"), gallery);
+writeJsonGuarded(path.join(contentDir, "bg-images.json"), bg, "bg image");
+writeJsonGuarded(path.join(contentDir, "gallery-images.json"), gallery, "gallery image");
 
 // Ensure videos.json references only m3u8 files that exist locally
 const videosJsonPath = path.join(contentDir, "videos.json");
