@@ -1,12 +1,12 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "haijie-web",
-  "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-19",
-  "compatibility_flags": ["nodejs_compat"],
+  // Static assets only — `next build` emits the whole site into out/, so
+  // there is no Worker script, no bindings, and no server runtime.
   "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "directory": "out",
+    "not_found_handling": "404-page"
   },
   "observability": {
     "enabled": true
@@ -16,14 +16,5 @@
   "routes": [
     { "pattern": "haijieliu.com", "custom_domain": true },
     { "pattern": "www.haijieliu.com", "custom_domain": true }
-  ],
-  "vars": {
-    "R2_CDN_URL": "https://media.haijieliu.com"
-  },
-  "r2_buckets": [
-    {
-      "binding": "MEDIA",
-      "bucket_name": "haijie-media"
-    }
   ]
 }
