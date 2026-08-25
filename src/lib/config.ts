@@ -3,7 +3,6 @@ export const config = {
     process.env.NEXT_PUBLIC_R2_CDN_URL ||
     process.env.R2_CDN_URL ||
     "https://media.haijieliu.com",
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "/api",
 };
 
 export function mediaUrl(path: string): string {
