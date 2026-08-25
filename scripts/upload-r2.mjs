@@ -3,8 +3,8 @@
  * Upload media from public/media into R2 bucket haijie-media.
  *
  * Usage:
- *   node scripts/upload-r2.mjs                # music + images
- *   node scripts/upload-r2.mjs --videos       # also upload videos
+ *   node scripts/upload-r2.mjs                # music + images + videos-mp4
+ *   node scripts/upload-r2.mjs --videos       # also upload the legacy HLS tree
  *   node scripts/upload-r2.mjs --only videos
  *   node scripts/upload-r2.mjs --dry-run
  */
@@ -66,6 +66,15 @@ function plan() {
         addJob(f, `images/${rel}`);
       }
     },
+    // The MP4s the site actually plays. Small enough to upload by default.
+    "videos-mp4": () => {
+      const root = path.join(SOURCE, "videos-mp4");
+      for (const f of walk(root, (p) => /\.mp4$/i.test(p))) {
+        const rel = path.relative(root, f).split(path.sep).join("/");
+        addJob(f, `videos-mp4/${rel}`);
+      }
+    },
+    // Legacy HLS ladder, no longer referenced by the site. Opt-in only.
     videos: () => {
       const root = path.join(SOURCE, "videos");
       for (const f of walk(root, (p) => /\.(m3u8|m4s|mp4|ts)$/i.test(p))) {
@@ -81,6 +90,7 @@ function plan() {
   } else {
     groups.music();
     groups.images();
+    groups["videos-mp4"]();
     if (includeVideos) groups.videos();
   }
 }

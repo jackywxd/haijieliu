@@ -18,16 +18,8 @@
     { "pattern": "www.haijieliu.com", "custom_domain": true }
   ],
   "vars": {
-    "R2_CDN_URL": "https://media.haijieliu.com",
-    "API_URL": "/api"
+    "R2_CDN_URL": "https://media.haijieliu.com"
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "haijie-messages",
-      "database_id": "bdb6b817-4902-4129-b848-8511c8fbd978"
-    }
-  ],
   "r2_buckets": [
     {
       "binding": "MEDIA",

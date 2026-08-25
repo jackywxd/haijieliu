@@ -8,9 +8,7 @@ export type VideoMeta = {
 };
 
 function normalizeLink(link: string): string {
-  return link.startsWith("http")
-    ? link
-    : mediaUrl(link.replace(/^\/videos\//, "videos/"));
+  return link.startsWith("http") ? link : mediaUrl(link);
 }
 
 export function getVideos(): VideoMeta[] {

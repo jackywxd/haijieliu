@@ -1,5 +1,4 @@
 import Header from "@/components/Header";
-import EmailForm from "@/components/EmailForm";
 import Footer from "@/components/Footer";
 import SlideShow from "@/components/SlideShow";
 import { mediaUrl } from "@/lib/config";
@@ -19,7 +18,6 @@ export default function HomePage() {
       <div className="main-body">
         <Header />
       </div>
-      <EmailForm />
       <Footer />
       <SlideShow settings={settings} />
     </>

@@ -57,24 +57,24 @@ const gallery = listFiles(path.join(mediaRoot, "images/gallery"), (name) =>
 writeJsonGuarded(path.join(contentDir, "bg-images.json"), bg, "bg image");
 writeJsonGuarded(path.join(contentDir, "gallery-images.json"), gallery, "gallery image");
 
-// Ensure videos.json references only m3u8 files that exist locally
+// Ensure videos.json references only MP4 files that exist locally
 const videosJsonPath = path.join(contentDir, "videos.json");
-const localM3u8 = new Set(
-  listFiles(path.join(mediaRoot, "videos"), (name) =>
-    name.toLowerCase().endsWith(".m3u8"),
+const localMp4 = new Set(
+  listFiles(path.join(mediaRoot, "videos-mp4"), (name) =>
+    name.toLowerCase().endsWith(".mp4"),
   ),
 );
 
-if (fs.existsSync(videosJsonPath) && localM3u8.size) {
+if (fs.existsSync(videosJsonPath) && localMp4.size) {
   const videos = JSON.parse(fs.readFileSync(videosJsonPath, "utf8"));
   const missing = videos
     .map((v) => path.basename(v.link))
-    .filter((file) => !localM3u8.has(file));
+    .filter((file) => !localMp4.has(file));
   if (missing.length) {
-    console.warn("videos.json references missing local playlists:");
+    console.warn("videos.json references missing local files:");
     for (const m of missing) console.warn(`  - ${m}`);
   } else {
-    console.log(`videos.json playlists OK (${localM3u8.size} local .m3u8)`);
+    console.log(`videos.json OK (${localMp4.size} local .mp4)`);
   }
 }
 
