@@ -32,6 +32,12 @@ if (!fs.existsSync(input)) {
 // Apple's HLS exports carry a ~10s presentation offset on the video track
 // while audio starts at 0. A stream copy normalizes that automatically, but
 // re-encoding preserves it and desyncs audio, so reset both explicitly.
+// Apple's hardware decoders top out at H.264 level 4.2, and WebKit refuses a
+// stream that declares anything higher outright — so an over-level file plays
+// on desktop and fails on every iPhone and iPad. Under CRF with no VBV bound
+// x264 cannot guarantee any level and signals 6.2, the spec maximum, so the
+// level and the buffer that justifies it both have to be stated explicitly.
+// The caps sit far above the ~3 Mbps these encodes actually use.
 const encodeArgs = copyOnly
   ? ["-c", "copy"]
   : [
@@ -43,6 +49,14 @@ const encodeArgs = copyOnly
       "libx264",
       "-profile:v",
       "high",
+      "-level:v",
+      "4.0",
+      "-maxrate",
+      "12M",
+      "-bufsize",
+      "24M",
+      "-pix_fmt",
+      "yuv420p",
       "-crf",
       "20",
       "-preset",
@@ -84,3 +98,16 @@ if (videoStart > 0.5) {
   );
   process.exit(1);
 }
+
+// Anything above 4.2 is rejected outright by WebKit, so it would ship looking
+// fine on a desktop browser and play on no Apple device at all.
+const MAX_APPLE_LEVEL = 42;
+const level = Number(probeVideo("stream=level"));
+if (!Number.isFinite(level) || level > MAX_APPLE_LEVEL) {
+  console.error(
+    `\nERROR: H.264 level ${level / 10} exceeds the ${MAX_APPLE_LEVEL / 10} Apple devices support — ` +
+      `this file would not play in Safari or on any iPhone or iPad.`,
+  );
+  process.exit(1);
+}
+console.log(`level: ${level / 10} (within Apple's ${MAX_APPLE_LEVEL / 10} limit)`);

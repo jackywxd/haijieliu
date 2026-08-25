@@ -95,6 +95,14 @@ function plan() {
   }
 }
 
+// Objects uploaded without this carry no cache-control at all, so browsers
+// fall back to heuristic caching. Re-uploading a file under the same name then
+// leaves anyone who already fetched it stuck on the old copy for an
+// indeterminate stretch — which is how a re-encoded video kept failing on a
+// phone long after the fix was live. A day is long enough to be worth caching
+// and short enough that a correction reaches everyone on its own.
+const CACHE_CONTROL = "public, max-age=86400";
+
 function putObject({ localPath, key }) {
   return new Promise((resolve, reject) => {
     if (dryRun) {
@@ -111,6 +119,8 @@ function putObject({ localPath, key }) {
         `${BUCKET}/${key}`,
         "--file",
         localPath,
+        "--cache-control",
+        CACHE_CONTROL,
         "--remote",
       ],
       { stdio: ["ignore", "pipe", "pipe"] },
