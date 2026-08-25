@@ -44,3 +44,7 @@ next-env.d.ts
 .wrangler/
 .open-next/
 migrations/_import_*.sql
+
+# Generated web videos — reproducible from the HLS sources in
+# public/media/videos via scripts/encode-video.mjs, and served from R2.
+/public/media/videos-mp4/
