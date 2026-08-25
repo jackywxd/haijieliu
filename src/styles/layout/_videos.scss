@@ -360,3 +360,47 @@ header {
     }
   }
 }
+
+/* Video player page */
+
+// The player used to be sized by width alone, so on a 1280x720 laptop it ran
+// 79px past the bottom of the window and pushed its own controls below the
+// fold. Capping the height keeps the whole player — controls included — on
+// screen. The cap leaves room for the body padding set in base/_page.scss plus
+// the year and description above; it is deliberately one conservative value
+// rather than a per-breakpoint calculation, since being a little short just
+// leaves unused space while being a little long brings the overflow back.
+#video-page {
+  padding-top: 1em;
+
+  .video-meta {
+    margin-bottom: 0.75em;
+
+    .video-year {
+      color: _palette(fg-bold);
+    }
+  }
+
+  video {
+    display: block;
+    // Both dimensions stay auto so the source ratio drives the shape and the
+    // browser shrinks against whichever cap binds first. Pinning either one
+    // stops it honouring the other: a fixed width leaves the box wider than
+    // the picture on short windows, with the controls running past the edge
+    // of the frame.
+    width: auto;
+    height: auto;
+    max-width: min(1200px, 100%);
+    max-height: calc(100vh - 14em);
+    max-height: calc(100dvh - 14em); // excludes mobile browser chrome
+    margin: 0 auto;
+    background-color: _palette(bg);
+  }
+
+  // The body drops its padding entirely at this width, so the video would
+  // otherwise sit flush against both screen edges while the text above it
+  // stayed indented.
+  @include breakpoint('<=small') {
+    padding: 1em;
+  }
+}

@@ -1,4 +1,4 @@
-const CACHE = "haijie-core-v3";
+const CACHE = "haijie-core-v4";
 const PRECACHE = ["/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -25,31 +25,21 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
 
+  // Navigations are left to the browser. Handling them here meant that any
+  // failed fetch fell back to a cache lookup that could come up empty, and an
+  // empty lookup resolves respondWith with undefined — which iOS Safari
+  // surfaces as "FetchEvent.respondWith received an error: Returned response
+  // is null" and no page at all. The fallback was never worth that risk: it
+  // could only ever serve "/", and only if a previous visit had cached it.
+  if (request.mode === "navigate") return;
+
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
   // Never cache API responses or RSC data fetches — always hit the network
-  // so new messages / server data show up without a SW version bump.
+  // so server data shows up without a SW version bump.
   if (url.pathname.startsWith("/api/") || url.searchParams.has("_rsc")) {
     event.respondWith(fetch(request));
-    return;
-  }
-
-  // Network-first for navigations; never cache error pages as "/"
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok && url.pathname === "/") {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put("/", copy));
-          }
-          return response;
-        })
-        .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match("/")),
-        ),
-    );
     return;
   }
 
