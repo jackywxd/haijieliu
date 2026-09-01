@@ -36,12 +36,29 @@
     color: inherit;
   }
 
+  // The name and the epitaph are two halves of one statement, so they sit side
+  // by side once there is room for the longest epitaph line to stay unbroken.
+  // Below `large` that no longer fits, and the pair stacks into one column.
   .row {
     display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+
+    @include breakpoint('>=large') {
+      flex-direction: row;
+      gap: 3em;
+    }
   }
 
   .column {
     width: 100%;
+
+    // Each half takes the width of its own text rather than half the row. The
+    // epitaph is a good deal wider than the name in these script faces, so
+    // splitting the row evenly would wrap it while leaving the name short.
+    @include breakpoint('>=large') {
+      width: auto;
+    }
   }
 
   @include breakpoint('<=small') {
@@ -52,14 +69,6 @@
     p {
       font-size: 1em;
     }
-   
-    .row {
-      display: inline;
-    }
-    .column {
-      padding-bottom: 1em;
-      width: 100%
-    }
   }
 
   @include breakpoint('<=xlarge') {
@@ -69,5 +78,15 @@
   @include breakpoint('<=xsmall') {
     padding: 3em 3em 3em 3em;
     margin: 0 0 (_size(element-margin) * 0.3) 0;
+  }
+
+  // On the home page the shell is a centred, capped column that already carries
+  // the horizontal inset (base/_page.scss). Keeping this element's own inset as
+  // well would double it and leave the two halves too narrow to hold a line.
+  .main-body & {
+    @include breakpoint('>=large') {
+      padding-left: 0;
+      padding-right: 0;
+    }
   }
 }

@@ -155,6 +155,16 @@
     padding-right: 3em;
   }
 
+  // Dropped on the home page for the same reason as the header's — the centred
+  // column in base/_page.scss supplies the inset there. /videos renders this
+  // section outside that column, so the rules above still apply on that page.
+  .main-body & {
+    @include breakpoint('>=large') {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
   // Desktop keeps the same single left-aligned column as the phone layout,
   // sharing the header's left edge rather than centring — a centred column
   // reads as detached from the hero above it. Only the year grows.

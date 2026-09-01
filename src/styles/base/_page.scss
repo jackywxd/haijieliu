@@ -108,12 +108,15 @@ body,
 
 // The home page keeps its text left-aligned, which on a wide monitor strands
 // the whole column against the left edge. Capping the column just above its
-// natural width (the widest timeline line runs ~32em) and centring it moves the
-// block towards the middle without re-wrapping any line.
+// natural width and centring it moves the block towards the middle without
+// re-wrapping any line. The cap has to clear the widest of the two things
+// below it: the header's two side-by-side columns (~36em including their gap)
+// and the timeline's poem column (~30em including the spine inset), plus the
+// padding above.
 .main-body {
   @include breakpoint('>=large') {
     margin-left: auto;
     margin-right: auto;
-    max-width: 38em;
+    max-width: 46em;
   }
 }
