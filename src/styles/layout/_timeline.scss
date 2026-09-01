@@ -1,0 +1,166 @@
+/* Timeline */
+
+// A year-by-year spine linking to each anniversary video. Designed at 375px
+// first; the desktop rules only centre and enlarge the same single column.
+//
+// Two things this section has to do for itself rather than inherit:
+//  - `body`/`.main-body` drop their padding to 0 at `<=small`, so the
+//    horizontal inset below is the only thing keeping it off the screen edge.
+//  - it is a sibling of `#header`, not a child, so it mirrors that element's
+//    padding (see layout/_header.scss) to keep both left edges flush.
+#timeline {
+  position: relative; // `body > *` only matches the AppShell wrapper, so on
+  z-index: 2;         // /videos this is what lifts the section above #bg
+  padding: 4em 0 2em 0;
+
+  // Every line sits over a slideshow that pans continuously; the same shadow
+  // the home page header uses keeps thin strokes legible against it.
+  .timeline-label,
+  .timeline-sublabel,
+  .timeline-year,
+  .timeline-ordinal,
+  .timeline-poem {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  }
+
+  .timeline-label {
+    font-family: 'Clicker Script', cursive; // as used for "1973 - 2020"
+    color: _palette(fg-bold);
+    font-size: 2em;
+    line-height: 1;
+    margin: 0 0 0.2em 0;
+  }
+
+  .timeline-sublabel {
+    color: _palette(fg-light);
+    font-size: 0.7em;
+    letter-spacing: _font(letter-spacing-alt);
+    margin: 0 0 2.5em 0;
+  }
+
+  .timeline-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 0 0 2.25em 2.75em;
+
+    // The connector runs from this year's dot down to the next one, so the
+    // last item leaves the line open rather than trailing into nothing.
+    &:before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1.05em;
+      bottom: -0.25em;
+      width: 1px;
+      background: _palette(border);
+    }
+
+    &:after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 9px;
+      height: 9px;
+      box-sizing: border-box;
+      border: solid 1px _palette(border);
+      border-radius: 100%;
+      background: _palette(bg);
+    }
+
+    &:last-child {
+      padding-bottom: 0;
+
+      &:before {
+        display: none;
+      }
+    }
+
+    // Filled dot marks where the years have reached so far.
+    &.is-latest:after {
+      background: _palette(fg-bold);
+      border-color: _palette(fg-bold);
+    }
+  }
+
+  // Overrides the global anchor style from base/_typography.scss, which would
+  // otherwise render every year in #808080 under a dotted underline.
+  .timeline-link {
+    display: block;
+    color: inherit;
+    border-bottom: 0;
+
+    &:hover,
+    &:focus-visible {
+      .timeline-poem {
+        color: _palette(fg-bold);
+      }
+    }
+
+    &:focus-visible {
+      outline: solid 1px _palette(border);
+      outline-offset: 0.5em;
+    }
+  }
+
+  .timeline-item:hover:after,
+  .timeline-item:focus-within:after {
+    background: _palette(fg-bold);
+    border-color: _palette(fg-bold);
+  }
+
+  .timeline-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9em;
+    margin-bottom: 0.3em;
+  }
+
+  .timeline-year {
+    font-family: 'Clicker Script', cursive;
+    color: _palette(fg-bold);
+    font-size: 1.9em;
+    line-height: 1;
+  }
+
+  .timeline-ordinal {
+    color: _palette(fg-light);
+    font-size: 0.68em;
+    letter-spacing: _font(letter-spacing-alt);
+    white-space: nowrap;
+  }
+
+  .timeline-poem {
+    display: block;
+    color: _palette(fg);
+    font-size: 0.85em;
+    line-height: 1.9;
+    max-width: 34em;
+    @include vendor('transition', 'color #{_duration(transition)} ease');
+  }
+
+  // Mirrors layout/_header.scss so the spine lines up with the header text.
+  @include breakpoint('<=xlarge') {
+    padding-left: 3.5em;
+    padding-right: 3.5em;
+  }
+
+  @include breakpoint('<=xsmall') {
+    padding-left: 3em;
+    padding-right: 3em;
+  }
+
+  // Desktop keeps the same single left-aligned column as the phone layout,
+  // sharing the header's left edge rather than centring — a centred column
+  // reads as detached from the hero above it. Only the year grows.
+  @include breakpoint('>=medium') {
+    .timeline-year {
+      font-size: 2.1em;
+    }
+  }
+}
