@@ -38,7 +38,6 @@ html {
 
 html,
 body {
-  height: 100%;
   overflow-x: auto;
   width: 100%;
   // Prevents animation/transition "flicker" on page load.
@@ -51,10 +50,24 @@ body {
       @include vendor('transition', 'none !important');
     }
   }
+}
+
+html {
+  height: 100%;
+
   @include breakpoint('short') {
     height: auto;
     min-height: 100%;
   }
+}
+
+// `overflow-x` above also computes <body>'s `overflow-y` to `auto`, which makes
+// it a scroll box in its own right. The document scrolls on <html>, so pinning
+// <body> to `height: 100%` would clip it to one screenful with no way to reach
+// the rest — the home page timeline runs well past that. Sizing to the content
+// keeps the whole page reachable while still filling a short page.
+body {
+  min-height: 100%;
 }
 
 body,
