@@ -11,12 +11,9 @@ export default function Header() {
           <p style={{ fontFamily: "League Script" }}>
             You have finished the race,
           </p>
-          <p style={{ fontFamily: "League Script" }}>You have kept the faith.</p>
-        </div>
-        <div className="column">
-          <p>就算換了時空變了容顏　</p>
-          <p>我依然記得你眼裡的依戀</p>
-          <p>縱然聚散由命也要用心感動天</p>
+          <p style={{ fontFamily: "League Script" }}>
+            You have kept the faith.
+          </p>
         </div>
       </div>
     </header>
