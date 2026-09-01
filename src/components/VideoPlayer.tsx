@@ -7,7 +7,7 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
         <div className="video-year">{video.year}</div>
         <div>{video.description}</div>
       </div>
-      <video key={video.link} src={video.link} controls playsInline preload="metadata" />
+      <video key={video.link} src={video.link} controls playsInline autoPlay preload="auto" />
     </div>
   );
 }
