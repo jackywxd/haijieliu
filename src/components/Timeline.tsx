@@ -19,7 +19,12 @@ function anniversaryLabel(year: number, firstYear: number): string {
   return `第${CHINESE_NUMERALS[nth - 1] ?? nth}年`;
 }
 
-export default function Timeline() {
+// The home page already carries an <h1> ("Haijie Liu") in the header, so the
+// timeline's label is a section heading there and the page heading on /videos,
+// where nothing else names the page.
+type Props = { as?: "h1" | "h2" };
+
+export default function Timeline({ as: Heading = "h2" }: Props) {
   const videos = [...getVideos()].sort((a, b) => a.year - b.year);
   if (videos.length === 0) return null;
 
@@ -28,7 +33,7 @@ export default function Timeline() {
 
   return (
     <section id="timeline" aria-label="思念的每一年">
-      <p className="timeline-label">Every Year Since</p>
+      <Heading className="timeline-label">Every Year Since</Heading>
       <p className="timeline-sublabel">思念的每一年</p>
 
       <ol className="timeline-list">

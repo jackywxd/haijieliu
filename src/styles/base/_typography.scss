@@ -182,3 +182,18 @@ hr {
     margin: (_size(element-margin) * 1.5) 0;
   }
 }
+
+// A heading that names the page for search engines and screen readers where the
+// design has no visible title of its own. Search Console cannot tell what
+// /gallery or /videos/2020 is about from a bare grid or a bare <video>.
+.sr-only {
+	border: 0;
+	clip: rect(0, 0, 0, 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}

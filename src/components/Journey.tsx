@@ -109,8 +109,15 @@ export default function Journey({ timeout }: { timeout?: boolean }) {
 
   return (
     <header id="journey-header" style={timeout ? { display: "none" } : {}}>
+      <h1 className="sr-only">
+        劉海婕的生命歷程 — The Life Journey of Haijie Liu
+      </h1>
       <div className="logo">
-        <img src={mediaUrl("images/icons/website-icon.png")} alt="Haijie" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={mediaUrl("images/icons/website-icon.png")}
+          alt="劉海婕紀念網站 In Loving Memory of Haijie Liu"
+        />
       </div>
       <Chapter nav={nav} />
       <nav>

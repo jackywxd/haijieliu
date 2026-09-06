@@ -1,0 +1,51 @@
+[
+  {
+    "file": "Haijie-2020.mp4",
+    "poster": "images/video-thumb/Haijie-2020.jpg",
+    "width": 960,
+    "height": 540,
+    "durationSeconds": 272
+  },
+  {
+    "file": "Haijie-2021.mp4",
+    "poster": "images/video-thumb/Haijie-2021.jpg",
+    "width": 960,
+    "height": 540,
+    "durationSeconds": 231
+  },
+  {
+    "file": "Haijie-2022.mp4",
+    "poster": "images/video-thumb/Haijie-2022.jpg",
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 279
+  },
+  {
+    "file": "Haijie-2023.mp4",
+    "poster": "images/video-thumb/Haijie-2023.jpg",
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 259
+  },
+  {
+    "file": "Haijie-2024.mp4",
+    "poster": "images/video-thumb/Haijie-2024.jpg",
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 266
+  },
+  {
+    "file": "Haijie-2025.mp4",
+    "poster": "images/video-thumb/Haijie-2025.jpg",
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 272
+  },
+  {
+    "file": "Haijie-2026.mp4",
+    "poster": "images/video-thumb/Haijie-2026.jpg",
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 217
+  }
+]
