@@ -11,6 +11,7 @@
     "upload:media": "node scripts/upload-r2.mjs",
     "sync:media": "node scripts/sync-media-manifests.mjs",
     "thumbs:gallery": "node scripts/generate-thumbnails.mjs",
+    "thumbs:video": "node scripts/generate-video-posters.mjs",
     "prebuild": "node scripts/sync-media-manifests.mjs && node scripts/generate-thumbnails.mjs"
   },
   "dependencies": {

@@ -4,10 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { mediaUrl } from "@/lib/config";
 import galleryImages from "@/content/gallery-images.json";
 
-const photos = galleryImages.map((name) => ({
+// The filenames are camera output ("_DSC9312.NEF", "141200326_14ddec2b60_o"),
+// which said nothing to a search engine or a screen reader. Nobody has captioned
+// these 55 photos, so the alt text says what is true of all of them and numbers
+// them for reference rather than inventing descriptions.
+const photos = galleryImages.map((name, index) => ({
   thumbSrc: mediaUrl(`images/gallery-thumb/${name}`),
   src: mediaUrl(`images/gallery/${name}`),
-  alt: name.replace(/\.[^.]+$/, ""),
+  alt: `劉海婕紀念相冊 — 照片 ${index + 1} / Haijie Liu memorial photo ${index + 1}`,
 }));
 
 export default function GalleryPage() {
@@ -36,6 +40,7 @@ export default function GalleryPage() {
 
   return (
     <>
+      <h1 className="sr-only">劉海婕紀念相冊 — Photo Gallery in Loving Memory of Haijie Liu</h1>
       <div id="gallery-main">
         {photos.map((photo, index) => (
           <article className="thumb" key={photo.src}>

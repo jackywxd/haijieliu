@@ -28,7 +28,7 @@ export default function AboutPage() {
       >
         <div id="about-wrapper">
           <section id="about-banner">
-            <h2>For my beloved wife</h2>
+            <h1>For my beloved wife</h1>
             <div className="content">
               <p>
                 My wife, Haijie Liu, suddenly passed away on Aug 28 2020 after
