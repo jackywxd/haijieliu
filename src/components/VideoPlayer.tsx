@@ -15,7 +15,7 @@ import type { VideoMeta } from "@/lib/videos";
 // the video into picture-in-picture instead, the video is already surviving on
 // its own and the handoff is skipped.
 //
-// Two supporting details matter as much as the swap itself:
+// Three supporting details matter as much as the swap itself:
 //   - iOS only lets an element play without a user gesture once that element
 //     has played inside one, so the audio element is "primed" (play + immediate
 //     pause) on the first interaction. Without this the background play() is
@@ -23,6 +23,9 @@ import type { VideoMeta } from "@/lib/videos";
 //   - The Media Session API is what puts the title and the play/pause/seek
 //     controls on the lock screen, and it has to keep pointing at whichever
 //     element is currently carrying the stream.
+//   - iOS silences the default "ambient" audio session on lock, which looks
+//     like a working handoff with no sound, so the page claims a "playback"
+//     session up front.
 
 const SEEK_STEP_SECONDS = 10;
 
@@ -52,6 +55,27 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
 
   const setPlaybackState = useCallback((state: MediaSessionPlaybackState) => {
     if ("mediaSession" in navigator) navigator.mediaSession.playbackState = state;
+  }, []);
+
+  // iOS starts every page in an "ambient" audio session, and the system
+  // silences ambient audio the moment the screen locks or the tab goes to the
+  // background — the element keeps advancing, so the lock screen shows the
+  // track running while nothing comes out of the speaker. Declaring "playback"
+  // says this audio is the point of the page, not background colour.
+  // Safari 16.4+ only; everywhere else the property is simply absent.
+  const claimPlaybackAudioSession = useCallback(() => {
+    const session = (
+      navigator as Navigator & { audioSession?: { type: string } }
+    ).audioSession;
+    // Re-asserting the same value is a no-op, but flipping types mid-session
+    // upsets iOS, so only write when it is not already what we need.
+    if (!session || session.type === "playback") return;
+    try {
+      session.type = "playback";
+    } catch {
+      // Older implementations reject unknown values; the default still plays
+      // in the foreground, which is no worse than before.
+    }
   }, []);
 
   // Unlock the audio element for later gesture-less playback. play() followed
@@ -126,6 +150,7 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
     // seed the lock screen from it for the same reason.
     playIntentRef.current = !videoEl.paused && !videoEl.ended;
     setPlaybackState(playIntentRef.current ? "playing" : "paused");
+    claimPlaybackAudioSession();
 
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
@@ -137,6 +162,7 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
 
     const onVideoPlay = () => {
       playIntentRef.current = true;
+      claimPlaybackAudioSession();
       primeAudio();
       setPlaybackState("playing");
     };
@@ -201,7 +227,13 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
       handedOffRef.current = false;
       playIntentRef.current = false;
     };
-  }, [handoffToAudio, primeAudio, restoreToVideo, setPlaybackState]);
+  }, [
+    claimPlaybackAudioSession,
+    handoffToAudio,
+    primeAudio,
+    restoreToVideo,
+    setPlaybackState,
+  ]);
 
   // Lock-screen / notification-shade controls. Without these the phone shows a
   // nameless stream and the hardware buttons do nothing once the tab is hidden.
