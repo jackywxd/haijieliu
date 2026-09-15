@@ -1,0 +1,37 @@
+name: Build the site
+description: >
+  Install dependencies and run the static export, fetching only the Git LFS
+  media the build actually reads. Shared by the pull-request check and the
+  deploy, so what CI validates is exactly what gets shipped.
+
+runs:
+  using: composite
+  steps:
+    # actions/checkout leaves LFS files as pointer stubs. That is fine for most
+    # of them, but scripts/generate-thumbnails.mjs hands the gallery images to
+    # sharp, which rejects a pointer with "Input file contains unsupported
+    # image format" and fails the build.
+    #
+    # Only the images are fetched. public/media/videos is 3.5GB of HLS sources
+    # that the Worker never serves — every media URL in the app is built by
+    # mediaUrl(), which points at the R2 CDN — so pulling it would cost minutes
+    # of runtime and LFS bandwidth on every run for bytes nobody reads. The
+    # manifest script only needs file *names*, which pointers still carry.
+    - name: Fetch the LFS images the build reads
+      shell: bash
+      run: git lfs pull --include="public/media/images/**"
+
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 22
+        cache: npm
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    # `next build` type-checks as part of the build, so there is no separate
+    # tsc step to keep in sync.
+    - name: Build
+      shell: bash
+      run: npm run build
