@@ -16,18 +16,84 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  WRANGLER_SEND_METRICS: "false"
+
 jobs:
   deploy:
-    name: Build and deploy to Cloudflare
+    name: Build, deploy and smoke test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/build
 
+      # Cheap, and it guards pushes that reach main without a pull request.
+      - name: Unit tests
+        run: npm run test:unit
+
+      # Before the deploy, so a failed download blocks shipping instead of
+      # leaving a new version live with its browser check unable to run.
+      - name: Install Playwright WebKit
+        run: npx playwright install --with-deps webkit
+
+      # The version to return to if the smoke tests below fail. Read from
+      # Cloudflare rather than assumed, and the deployment with the latest
+      # created_on is the one serving traffic.
+      - name: Record the version currently live
+        id: live
+        run: |
+          version="$(npx wrangler deployments list --json | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0, "utf8"));
+            const latest = d.sort((a, b) => a.created_on.localeCompare(b.created_on)).at(-1);
+            const v = latest?.versions?.sort((a, b) => b.percentage - a.percentage)[0];
+            process.stdout.write(v?.version_id ?? "");
+          ')"
+          echo "Live before deploy: ${version:-none}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       # The build already ran above, so this is `npm run deploy` without the
       # second build it would otherwise trigger.
       - name: Deploy to Cloudflare Workers
         run: npx wrangler deploy
+
+      # Waits until production is serving this run's build before checking it,
+      # so a propagation delay cannot pass the previous deploy off as this one.
+      - name: Smoke test production
+        id: smoke
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SITE: https://haijieliu.com
+        run: EXPECT_BUILD_ID="$(cat .next/BUILD_ID)" npm run test:smoke
+
+      # One real visitor journey on production, on the engine every bug that
+      # slipped past a desktop check so far has been specific to.
+      - name: Browser smoke test production
+        id: browser
+        env:
+          BASE_URL: https://haijieliu.com
+        run: npx playwright test --grep @smoke --project=iphone-webkit
+
+      # Only when a smoke test failed — not when the deploy itself failed,
+      # since the previous version is then still live. Rolling back cannot fix
+      # a problem on the media CDN (media is not versioned with the Worker),
+      # but it does withdraw pages that point at media which is not there,
+      # such as a new year whose MP4 was never uploaded.
+      - name: Roll back to the previous version
+        if: >-
+          failure() && steps.live.outputs.version != '' &&
+          (steps.smoke.outcome == 'failure' || steps.browser.outcome == 'failure')
+        run: >-
+          npx wrangler rollback "${{ steps.live.outputs.version }}"
+          --message "Smoke test failed for ${{ github.sha }}"
+          --yes
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

@@ -10,6 +10,21 @@ npm run preview      # OpenNext + workerd 預覽
 npm run deploy       # 構建並部署到 Cloudflare Workers
 ```
 
+## 測試
+
+```bash
+npm run test:unit    # 秒級，不需瀏覽器
+npm run build && npm run test:e2e    # 自動用 wrangler dev 提供 out/，跑 iPhone WebKit + 桌面 Chromium
+SITE=https://haijieliu.com npm run test:smoke    # 唯讀，檢查線上所有路由與媒體
+```
+
+首次跑 E2E 前需安裝瀏覽器：`npx playwright install webkit chromium`。
+
+- **CI（每個 PR）**：build → unit → 以 `wrangler dev` 提供建置 → smoke → E2E。媒體直接向正式 CDN 讀取，所以「新增年份卻沒上傳 MP4」會在合併前就失敗。
+- **部署（push 到 main）**：記下目前線上版本 → 部署 → 等到正式站開始提供這次的 build → smoke + iPhone WebKit 瀏覽器 smoke。任何一項失敗就自動 `wrangler rollback` 回上一版，workflow 標紅。
+
+每個測試開頭都寫著它防範的失敗；新增測試時請維持這個慣例。
+
 ## 媒體資源
 
 媒體存放於本倉庫 `public/media/`，以 **Git LFS** 管理大文件：
