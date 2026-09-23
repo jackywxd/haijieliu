@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Timeline from "@/components/Timeline";
-import Footer from "@/components/Footer";
+import MemorialMusic from "@/components/MemorialMusic";
 import SlideShow from "@/components/SlideShow";
 import { mediaUrl } from "@/lib/config";
 import bgImages from "@/content/bg-images.json";
@@ -51,9 +51,8 @@ export default function HomePage() {
       />
       <div className="main-body">
         <Header />
-        <Timeline />
+        <Timeline action={<MemorialMusic />} />
       </div>
-      <Footer />
       <SlideShow settings={settings} />
     </>
   );
