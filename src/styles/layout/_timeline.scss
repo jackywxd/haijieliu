@@ -31,6 +31,78 @@
     margin: 0 0 0.2em 0;
   }
 
+  .timeline-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    margin: 0 0 0.2em 0;
+
+    .timeline-label {
+      margin: 0;
+      white-space: nowrap;
+    }
+  }
+
+  // The music control that used to sit alone at the foot of the home page.
+  .timeline-music {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    min-width: 0;
+  }
+
+  // Scoped under #timeline so it outranks the global `button` rule in
+  // components/_button.scss — a solid grey fill with a fixed height and
+  // padding, whose colour is also !important.
+  .timeline-music-toggle {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2em;
+    height: 2.2em;
+    padding: 0;
+    line-height: 1;
+    font-size: 0.9em;
+    background-color: transparent;
+    border: solid 1px _palette(border);
+    border-radius: 100%;
+    color: _palette(fg-bold) !important;
+    cursor: pointer;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+    @include vendor('transition', 'background-color #{_duration(transition)} ease-in-out');
+
+    &:hover {
+      background-color: _palette(border-bg);
+    }
+
+    &:focus-visible {
+      outline: solid 1px _palette(fg-bold);
+      outline-offset: 3px;
+    }
+
+    // A play triangle's visual centre sits left of its box.
+    .fa-play {
+      margin-left: 0.15em;
+    }
+  }
+
+  .timeline-music-wave {
+    min-width: 0;
+    opacity: 0.7;
+
+    canvas {
+      display: block;
+      max-width: 100%;
+    }
+
+    // Beside the heading on a phone there is room for the button and little
+    // else; a spectrum squeezed into the few pixels left only reads as noise.
+    @include breakpoint('<=small') {
+      display: none;
+    }
+  }
+
   .timeline-sublabel {
     color: _palette(fg-light);
     font-size: 0.7em;
