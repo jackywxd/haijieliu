@@ -14,9 +14,6 @@ test("follows the timeline from the home page to this year's video @smoke", asyn
 }) => {
   await page.goto("/");
 
-  const mediaResponse = page.waitForResponse((r) =>
-    r.url().endsWith(`/Haijie-${latest}.mp4`),
-  );
   // click() scrolls the row into view the way a thumb would; the timeline sits
   // below the fold on a phone.
   await page
@@ -25,15 +22,19 @@ test("follows the timeline from the home page to this year's video @smoke", asyn
     .click();
 
   await expect(page).toHaveURL(new RegExp(`/videos/${latest}$`));
-  await expect(page.locator("#video-page video")).toHaveAttribute(
-    "src",
-    new RegExp(`/Haijie-${latest}\\.mp4$`),
-  );
+  const video = page.locator("#video-page video");
+  await expect(video).toHaveAttribute("src", new RegExp(`/Haijie-${latest}\\.mp4$`));
 
-  // Whether frames decode is a codec question the smoke test answers from the
-  // file itself; what this checks is that the browser could fetch the video.
-  const response = await mediaResponse;
-  expect([200, 206]).toContain(response.status());
+  // Whether the file the page points at exists is asked of the CDN directly.
+  // Watching the browser fetch it is not a stable signal: that is each
+  // engine's media pipeline, and they disagree. Linux WebKit opened and
+  // aborted the URL twice (status 0) around the request that returned 200,
+  // and Chromium reported a missing MP4 as a request with no response at all,
+  // so a wait on the response only ended at the test timeout. Whether frames
+  // decode is left to the smoke test, which reads the level off the file.
+  const src = await video.getAttribute("src");
+  const res = await page.request.get(src!, { headers: { Range: "bytes=0-1" } });
+  expect([200, 206], `${src} answered ${res.status()}`).toContain(res.status());
 });
 
 // Protects: the menu — the only way to reach anything but the home page —
