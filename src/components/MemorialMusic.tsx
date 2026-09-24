@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { claimPlaybackAudioSession } from "@/lib/audioSession";
 import { mediaUrl } from "@/lib/config";
 import AudioSpectrum from "./AudioSpectrum";
 
@@ -184,6 +185,10 @@ export default function MemorialMusic() {
     if (!audioContext || !player.current) return;
 
     if (player.current.paused) {
+      // Without this the music falls silent when the screen locks on iOS:
+      // it plays through the AudioContext, which iOS interrupts in the
+      // background unless the page holds a playback session.
+      claimPlaybackAudioSession();
       player.current.play();
       audioContext.resume();
     } else {
