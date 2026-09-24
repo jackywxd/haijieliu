@@ -160,6 +160,27 @@
     }
   }
 
+  // Each year eases in as it rises into view and eases out as it leaves at
+  // the top. The animation is driven by the scroll position itself rather
+  // than by time, so it keeps pace with the music's slow drift as well as a
+  // visitor's own scrolling. Browsers without scroll-driven animations
+  // (Safari before 26, Firefox) show every year as they did before, and
+  // visitors who ask for reduced motion see no movement.
+  //
+  // `animation-timeline` must follow the `animation` shorthand, which resets
+  // it. The exit fills forwards only: filling backwards as well would hold
+  // its starting frame over the entrance for the whole time the year is in
+  // view.
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .timeline-item {
+        animation: timeline-enter linear both, timeline-exit linear forwards;
+        animation-timeline: view(), view();
+        animation-range: entry 0% entry 100%, exit 0% exit 100%;
+      }
+    }
+  }
+
   // Overrides the global anchor style from base/_typography.scss, which would
   // otherwise render every year in #808080 under a dotted underline.
   .timeline-link {
@@ -244,5 +265,19 @@
     .timeline-year {
       font-size: 2.1em;
     }
+  }
+}
+
+@keyframes timeline-enter {
+  from {
+    opacity: 0;
+    transform: translateY(1em);
+  }
+}
+
+@keyframes timeline-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-0.5em);
   }
 }
