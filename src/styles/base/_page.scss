@@ -61,12 +61,18 @@ html {
   }
 }
 
-// `overflow-x` above also computes <body>'s `overflow-y` to `auto`, which makes
-// it a scroll box in its own right. The document scrolls on <html>, so pinning
-// <body> to `height: 100%` would clip it to one screenful with no way to reach
-// the rest — the home page timeline runs well past that. Sizing to the content
-// keeps the whole page reachable while still filling a short page.
+// The document scrolls on <html>. <body> clips sideways overflow rather than
+// scrolling it: `overflow-x: auto` above also computes its `overflow-y` to
+// `auto`, which made <body> a scroll box in its own right — one that never
+// scrolls, yet is the nearest scroller to everything on the page. Scroll-driven
+// animations (`animation-timeline: view()`, see layout/_timeline.scss) follow
+// the nearest scroller, so under it they never moved. `clip` hides the same
+// overflow without creating a scroll box, and leaves `overflow-y` visible.
+//
+// Sized to the content, not pinned to `height: 100%`, so the whole page stays
+// reachable — the home page timeline runs well past one screenful.
 body {
+  overflow-x: clip;
   min-height: 100%;
 }
 
