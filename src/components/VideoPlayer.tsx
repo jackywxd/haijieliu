@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { claimPlaybackAudioSession } from "@/lib/audioSession";
 import type { VideoMeta } from "@/lib/videos";
 
 // Mobile browsers stop a <video> element as soon as the tab is backgrounded or
@@ -87,23 +88,6 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
 
   const setPlaybackState = useCallback((state: MediaSessionPlaybackState) => {
     if ("mediaSession" in navigator) navigator.mediaSession.playbackState = state;
-  }, []);
-
-  // Declare that this page's sound is the point of it, so the category never
-  // falls back to "ambient", which the ring/silent switch mutes and other
-  // apps' audio talks over. Safari 16.4+ only; elsewhere the property is absent.
-  const claimPlaybackAudioSession = useCallback(() => {
-    const session = (
-      navigator as Navigator & { audioSession?: { type: string } }
-    ).audioSession;
-    // Re-asserting the same value is a no-op, but flipping types mid-session
-    // upsets iOS, so only write when it is not already what we need.
-    if (!session || session.type === "playback") return;
-    try {
-      session.type = "playback";
-    } catch {
-      // Older implementations reject unknown values; the default still plays.
-    }
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -288,7 +272,6 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
       audioLedRef.current = false;
     };
   }, [
-    claimPlaybackAudioSession,
     setPlaybackState,
     // The keyed elements are replaced when the video changes; the new ones
     // need wiring too.
@@ -454,7 +437,6 @@ export default function VideoPlayer({ video }: { video: VideoMeta }) {
       playIntentRef.current = false;
     };
   }, [
-    claimPlaybackAudioSession,
     handoffToAudio,
     primeAudio,
     restoreToVideo,
