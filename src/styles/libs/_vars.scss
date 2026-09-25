@@ -84,9 +84,16 @@ $font: (
 $palette: (
   bg: #000,
   bg-alt: #2a2f4a,
-  fg: rgba(255, 255, 255, 0.75),
-  fg-bold: #fff,
-  fg-light: rgba(255, 255, 255, 0.5),
+  // Warm whites, measured against the photo backdrop at its brightest (a white
+  // pixel through #bg's 20% opacity, #333): fg-bold 11.0:1, fg 8.3:1,
+  // fg-light 5.0:1 — all over the 4.5:1 minimum. Against plain black they are
+  // 18.4, 13.9 and 8.2:1.
+  fg: #d8d1c7,
+  fg-bold: #f4efe8,
+  fg-light: #a9a197,
+  // The one accent: the home page's eyebrow, the newest year and the music
+  // controls. 6.7:1 over the brightest backdrop.
+  champagne: #d6b98c,
   border: rgba(255, 255, 255, 0.35),
   border-bg: rgba(255, 255, 255, 0.125),
   border2: rgba(255, 255, 255, 0.25),

@@ -20,11 +20,10 @@ const USEFUL_BINS = 0.7;
 // out evenly, the bass and melody would crowd into the first few bars of a
 // full-width band and leave the rest of it flat.
 const LOWEST_BIN = 1;
-// Once the music stops the bars sink rather than vanish, by this factor a frame.
+// Once the music stops the bars sink rather than vanish, by this factor a
+// frame, until nothing is left: at rest the band is not drawn at all.
 const DECAY = 0.88;
-// A silent bar keeps this much height, so at rest the band is a thin line.
-const FLOOR_PX = 2;
-const COLOR = "#9bf1ff"; // _palette(highlight)
+const COLOR = "#d6b98c"; // _palette(champagne)
 
 type Props = { analyser: AnalyserNode | null; playing: boolean };
 
@@ -48,7 +47,7 @@ export default function SpectrumBackdrop({ analyser, playing }: Props) {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
-    // Visitors who ask for less motion get the resting line, not the dance.
+    // Visitors who ask for less motion get the band at rest, not the dance.
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const live = playing && !!analyser && !still;
     const data = analyser ? new Uint8Array(analyser.frequencyBinCount) : null;
@@ -74,9 +73,9 @@ export default function SpectrumBackdrop({ analyser, playing }: Props) {
             : previous * DECAY;
         if (next < 0.5) next = 0;
         heights.current[i] = next;
-        if (next > 0) moving = true;
-        const h = Math.max(FLOOR_PX, next);
-        ctx.fillRect(offset + i * (BAR_WIDTH + BAR_GAP), height - h, BAR_WIDTH, h);
+        if (next <= 0) continue;
+        moving = true;
+        ctx.fillRect(offset + i * (BAR_WIDTH + BAR_GAP), height - next, BAR_WIDTH, next);
       }
       heights.current.length = count;
       return moving;

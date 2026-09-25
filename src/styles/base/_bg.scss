@@ -10,7 +10,9 @@
   @include vendor('transition', 'opacity #{_duration(bg-fadein)} ease-in-out');
   height: 100%;
   left: 0;
-  opacity: 0.25;
+  // Dim enough that the lightest text, fg-light, keeps 4.5:1 over the
+  // brightest pixel a photo can have (see the palette in libs/_vars.scss).
+  opacity: 0.2;
   position: fixed;
   top: 0;
   width: 100%;

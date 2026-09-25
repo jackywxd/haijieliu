@@ -17,19 +17,89 @@
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
   }
 
-  h1 {
-    font-size: 3.25em;
-    margin: 0 0 (_size(element-margin) * 0.275) 0;
+  // The English stays handwritten: the name in Monsieur La Doulaise, the rest
+  // in Clicker Script. The epitaph was in League Script, whose hairline strokes
+  // all but vanished on a phone. These faces come in one weight, so the bold
+  // the global heading rule asks for would only be faked, and their small
+  // x-heights are why the sizes below run large.
+  h1,
+  h2,
+  h3,
+  .header-epitaph {
+    font-weight: normal;
+    letter-spacing: 0;
   }
 
-  p {
-    // _section.scss dims every `header p` to fg-light (50% white) for use as a
-    // subtitle under a section heading. Here these lines are the page's primary
-    // content, and against the photo backdrop 50% white measures 3.95:1 at its
-    // worst — under the 4.5:1 minimum. Body colour takes the worst case to 6.7:1.
+  .header-eyebrow {
+    font-family: 'Clicker Script', cursive;
+    font-size: 2em;
+    line-height: 1.25;
+    color: _palette(champagne);
+    margin: 0;
+  }
+
+  .header-name {
+    font-family: 'Monsieur La Doulaise', cursive;
+    // The widest line here; the viewport cap keeps it on one line on a 320px
+    // phone.
+    font-size: min(4.75em, 19.5vw);
+    line-height: 1.1;
+    color: _palette(fg-bold);
+    margin: 0.15em 0 0 0;
+  }
+
+  .header-dates {
+    font-family: 'Clicker Script', cursive;
+    font-size: 1.875em;
+    line-height: 1.2;
     color: _palette(fg);
-    font-size: 1.35em;
-    line-height: 1.65em;
+    margin: 0.25em 0 0 0;
+  }
+
+  // _section.scss dims every `header p` to fg-light for use as a subtitle. Here
+  // these lines are the page's primary content, so they take body colour.
+  .header-epitaph {
+    font-family: 'Clicker Script', cursive;
+    font-size: 1.75em;
+    line-height: 1.43;
+    color: _palette(fg);
+
+    // A short rule in the accent marks the turn from the name to the epitaph.
+    &:before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      margin: 0 0 1.15em 0;
+      background: _palette(champagne);
+    }
+
+    p {
+      color: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      margin: 0;
+    }
+  }
+
+  // Side by side on a desktop the two halves have to share a line, so the
+  // phone sizes step down here rather than up.
+  @include breakpoint('>=large') {
+    .header-eyebrow {
+      font-size: 1.75em;
+    }
+
+    .header-name {
+      font-size: 3.75em;
+    }
+
+    .header-dates {
+      font-size: 1.6em;
+    }
+
+    .header-epitaph {
+      font-size: 1.5em;
+    }
   }
 
   a {
@@ -42,7 +112,7 @@
   .row {
     display: flex;
     flex-direction: column;
-    gap: 1.5em;
+    gap: 2.25em;
 
     @include breakpoint('>=large') {
       flex-direction: row;
@@ -61,16 +131,6 @@
     }
   }
 
-  @include breakpoint('<=small') {
-    h1 {
-      font-size: 2em;
-    }
-
-    p {
-      font-size: 1em;
-    }
-  }
-
   @include breakpoint('<=xlarge') {
     padding: 3em 3.5em 3.5em 3.5em;
   }
@@ -78,6 +138,13 @@
   @include breakpoint('<=xsmall') {
     padding: 3em 3em 3em 3em;
     margin: 0 0 (_size(element-margin) * 0.3) 0;
+  }
+
+  // 28px gutters on a phone: the 48px above left the script lines too little
+  // room. layout/_timeline.scss matches it.
+  @include breakpoint('<=small') {
+    padding-left: 1.75em;
+    padding-right: 1.75em;
   }
 
   // On the home page the shell is a centred, capped column that already carries
