@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { claimPlaybackAudioSession } from "@/lib/audioSession";
 import { mediaUrl } from "@/lib/config";
-import AudioSpectrum from "./AudioSpectrum";
+import SpectrumBackdrop from "./SpectrumBackdrop";
 
 // Played in order, then from the top again.
 const PLAYLIST = [
@@ -24,6 +25,9 @@ const SCROLL_PX_PER_SECOND = 16;
 const TURN_BEFORE_END_PX = 24;
 // Keys that move the page. Pressing one means the visitor wants control back.
 const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
+// How long the play button takes to fly from the heading to the corner.
+// layout/_music.scss times the rest of the controls' entrance against it.
+const FLIGHT_MS = 750;
 
 type Direction = { current: 1 | -1 };
 
@@ -61,22 +65,49 @@ function drift(direction: Direction): () => void {
   });
 
   // Scroll events cannot say who moved the page — the drift fires them too —
-  // so the visitor taking over is read from their input instead.
+  // so the visitor taking over is read from their input instead. Pressing the
+  // music controls is not reaching for the page, so those do not count.
   const onKey = (e: KeyboardEvent) => {
-    if (SCROLL_KEYS.has(e.key)) stop();
+    if (SCROLL_KEYS.has(e.key) && !isOnMusicControls(e.target)) stop();
+  };
+  const onInput = (e: Event) => {
+    if (!isOnMusicControls(e.target)) stop();
   };
   const inputs = ["wheel", "touchstart", "mousedown"] as const;
-  inputs.forEach((type) => window.addEventListener(type, stop, { passive: true }));
+  inputs.forEach((type) => window.addEventListener(type, onInput, { passive: true }));
   window.addEventListener("keydown", onKey);
 
   function stop() {
     cancelAnimationFrame(frame);
-    inputs.forEach((type) => window.removeEventListener(type, stop));
+    inputs.forEach((type) => window.removeEventListener(type, onInput));
     window.removeEventListener("keydown", onKey);
   }
   return stop;
 }
 
+// The layer the controls and the spectrum are rendered into: AppShell's root,
+// the one `body > *` in base/_page.scss makes a stacking context. It lives in
+// the root layout, so it is already there on every render, including a
+// client-side navigation into the home page, and there is nothing to
+// subscribe to. The server has no document; the portals appear on hydrate.
+const subscribeToNothing = () => () => {};
+const findLayer = () => document.querySelector<HTMLElement>("body > .body") ?? document.body;
+const noLayerOnServer = () => null;
+
+function isOnMusicControls(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(".music-dock") !== null;
+}
+
+// The control starts beside the timeline heading. The first press sends it
+// flying to the bottom-right corner, where it stays, flanked by previous and
+// next, while the page drifts under it. The spectrum lies faintly along the
+// bottom of the window behind everything.
+//
+// Both the corner controls and the spectrum are rendered into AppShell's root,
+// the layer that also holds the background slideshow (#bg), not the timeline:
+// fixed there, they cover the window, and z-index places the spectrum between
+// the slideshow and the text, and the controls above the text but below the
+// menu.
 export default function MemorialMusic() {
   const player = useRef<HTMLAudioElement>(null);
   const [play, setPlay] = useState(false);
@@ -87,6 +118,18 @@ export default function MemorialMusic() {
   // in place; a track chosen any other way waits for the button.
   const advancing = useRef(false);
   const direction = useRef<1 | -1>(1);
+  // Set while previous/next swaps the src of a playing track, so the pause the
+  // swap causes does not read as the visitor stopping the music.
+  const switching = useRef(false);
+
+  const layer = useSyncExternalStore(subscribeToNothing, findLayer, noLayerOnServer);
+  // Whether the control has moved to the corner. It never moves back.
+  const [docked, setDocked] = useState(false);
+  const headingButton = useRef<HTMLButtonElement>(null);
+  const dockFly = useRef<HTMLSpanElement>(null);
+  const dockButton = useRef<HTMLButtonElement>(null);
+  // Where the heading button was when pressed, for the flight to start from.
+  const flight = useRef<{ from: DOMRect; focused: boolean } | null>(null);
 
   const state = useRef({
     audioEle: null as HTMLAudioElement | null,
@@ -116,8 +159,40 @@ export default function MemorialMusic() {
   useEffect(() => {
     if (!advancing.current || !player.current) return;
     advancing.current = false;
-    player.current.play().catch(() => setPlay(false));
+    player.current.play().catch(() => {
+      switching.current = false;
+      setPlay(false);
+    });
   }, [track]);
+
+  // Fly the control from the heading to the corner: measure both ends and
+  // play the difference back to zero. X and Y ride on separate elements with
+  // different easings — across first, then down — which bends the straight
+  // line into an arc.
+  useLayoutEffect(() => {
+    const trip = flight.current;
+    flight.current = null;
+    const fly = dockFly.current;
+    const button = dockButton.current;
+    if (!docked || !trip || !fly || !button) return;
+
+    // The heading button had keyboard focus; hand it to its replacement.
+    if (trip.focused) button.focus({ preventScroll: true });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const to = button.getBoundingClientRect();
+    const dx = trip.from.left + trip.from.width / 2 - (to.left + to.width / 2);
+    const dy = trip.from.top + trip.from.height / 2 - (to.top + to.height / 2);
+    const scale = trip.from.width / to.width;
+    fly.animate([{ transform: `translateX(${dx}px)` }, { transform: "none" }], {
+      duration: FLIGHT_MS,
+      easing: "cubic-bezier(0.3, 0.7, 0.4, 1)",
+    });
+    button.animate([{ transform: `translateY(${dy}px) scale(${scale})` }, { transform: "none" }], {
+      duration: FLIGHT_MS,
+      easing: "cubic-bezier(0.6, 0, 0.8, 0.4)",
+    });
+  }, [docked]);
 
   function setupAudioNode() {
     let ana = analyser;
@@ -172,8 +247,13 @@ export default function MemorialMusic() {
   // not the visitor stopping the music — the next track is about to start —
   // so the button and the drift carry straight on through it.
   const onPause = (e: React.SyntheticEvent<HTMLAudioElement>) => {
-    if (e.currentTarget.ended) return;
+    if (e.currentTarget.ended || switching.current) return;
     setPlay(false);
+  };
+
+  const onPlay = () => {
+    switching.current = false;
+    setPlay(true);
   };
 
   const onEnded = () => {
@@ -181,7 +261,7 @@ export default function MemorialMusic() {
     setTrack((t) => (t + 1) % PLAYLIST.length);
   };
 
-  const onButtonClick = () => {
+  const togglePlayback = () => {
     if (!audioContext || !player.current) return;
 
     if (player.current.paused) {
@@ -197,6 +277,30 @@ export default function MemorialMusic() {
     }
   };
 
+  // The first press, from beside the heading: start the music and send the
+  // control to the corner.
+  const onHeadingButtonClick = () => {
+    const button = headingButton.current;
+    if (!audioContext || !player.current || !button) return;
+    flight.current = {
+      from: button.getBoundingClientRect(),
+      focused: document.activeElement === button,
+    };
+    togglePlayback();
+    setDocked(true);
+  };
+
+  // Previous and next keep the music as it was: a playing track hands over to
+  // the next one playing, a paused one to the next one paused.
+  const skip = (step: 1 | -1) => {
+    const audio = player.current;
+    if (audio && !audio.paused) {
+      advancing.current = true;
+      switching.current = true;
+    }
+    setTrack((t) => (t + step + PLAYLIST.length) % PLAYLIST.length);
+  };
+
   return (
     <div className="timeline-music">
       <audio
@@ -204,7 +308,7 @@ export default function MemorialMusic() {
         ref={player}
         crossOrigin="anonymous"
         preload="metadata"
-        onPlay={() => setPlay(true)}
+        onPlay={onPlay}
         onPause={onPause}
         onEnded={onEnded}
         src={PLAYLIST[track]}
@@ -212,23 +316,60 @@ export default function MemorialMusic() {
         Your browser does not support the <code>audio</code> element.
       </audio>
       {/* A real button, so it can be reached and pressed from a keyboard and
-          is announced by name — it was a bare div with a click handler. */}
-      <button
-        type="button"
-        className="timeline-music-toggle"
-        onClick={onButtonClick}
-        aria-label={play ? "暫停音樂" : "播放音樂"}
-      >
-        <i className={play ? "fa fa-pause" : "fa fa-play"} aria-hidden="true" />
-      </button>
-      <div className="timeline-music-wave" aria-hidden="true">
-        <AudioSpectrum
-          audioId="songsforhaijie"
-          height={28}
-          width={120}
-          analyser={analyser}
-        />
-      </div>
+          is announced by name. Only ever shown paused: pressing it plays, and
+          the control moves to the corner for good. */}
+      {!docked && (
+        <button
+          ref={headingButton}
+          type="button"
+          className="timeline-music-toggle"
+          onClick={onHeadingButtonClick}
+          aria-label="播放音樂"
+        >
+          <i className="fa fa-play" aria-hidden="true" />
+        </button>
+      )}
+      {layer &&
+        createPortal(
+          <div className="music-spectrum" aria-hidden="true">
+            <SpectrumBackdrop analyser={analyser} playing={play} />
+          </div>,
+          layer,
+        )}
+      {layer &&
+        docked &&
+        createPortal(
+          <div className="music-dock" role="group" aria-label="音樂">
+            <button
+              type="button"
+              className="music-dock-skip music-dock-previous"
+              onClick={() => skip(-1)}
+              aria-label="上一首"
+            >
+              <i className="fa fa-step-backward" aria-hidden="true" />
+            </button>
+            <span className="music-dock-fly" ref={dockFly}>
+              <button
+                ref={dockButton}
+                type="button"
+                className="music-dock-toggle"
+                onClick={togglePlayback}
+                aria-label={play ? "暫停音樂" : "播放音樂"}
+              >
+                <i className={play ? "fa fa-pause" : "fa fa-play"} aria-hidden="true" />
+              </button>
+            </span>
+            <button
+              type="button"
+              className="music-dock-skip music-dock-next"
+              onClick={() => skip(1)}
+              aria-label="下一首"
+            >
+              <i className="fa fa-step-forward" aria-hidden="true" />
+            </button>
+          </div>,
+          layer,
+        )}
     </div>
   );
 }

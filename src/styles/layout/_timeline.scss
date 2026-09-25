@@ -87,22 +87,6 @@
     }
   }
 
-  .timeline-music-wave {
-    min-width: 0;
-    opacity: 0.7;
-
-    canvas {
-      display: block;
-      max-width: 100%;
-    }
-
-    // Beside the heading on a phone there is room for the button and little
-    // else; a spectrum squeezed into the few pixels left only reads as noise.
-    @include breakpoint('<=small') {
-      display: none;
-    }
-  }
-
   .timeline-sublabel {
     color: _palette(fg-light);
     font-size: 0.7em;

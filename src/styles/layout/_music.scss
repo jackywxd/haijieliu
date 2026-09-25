@@ -1,0 +1,163 @@
+/* Music */
+
+// The home page music's two window-level pieces: the spectrum lying along the
+// bottom behind the timeline, and the playback controls docked in the bottom
+// right corner once the music has been started (components/MemorialMusic.tsx).
+// Both are rendered into AppShell's root, the stacking context #bg (z-index 1)
+// and the page (2) share, so the numbers below slot them between the slideshow
+// and the page, and under the top bar and menu (10000 and up).
+
+// Faint enough to sit behind the text without competing with it.
+.music-spectrum {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  z-index: 1;
+  opacity: 0.22;
+  pointer-events: none;
+
+  // On a desktop the band spans the centred content column rather than the
+  // whole window: the same 46em box and side padding as .main-body in
+  // base/_page.scss.
+  @include breakpoint('>=large') {
+    left: 50%;
+    right: auto;
+    width: 46em;
+    max-width: 100%;
+    height: 150px;
+    padding: 0 4em;
+    box-sizing: border-box;
+    @include vendor('transform', 'translateX(-50%)');
+  }
+
+  @include breakpoint('large') {
+    padding: 0 3.5em;
+  }
+}
+
+.music-spectrum-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.music-dock {
+  position: fixed;
+  right: 1em;
+  bottom: calc(1em + env(safe-area-inset-bottom, 0px));
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+
+  // The pill fades in once the flying button is nearly home.
+  &:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 999px;
+    background: rgba(12, 12, 14, 0.62);
+    border: solid 1px rgba(255, 255, 255, 0.14);
+    @include vendor('backdrop-filter', 'blur(12px)');
+    @include vendor('animation', 'music-dock-pill 0.35s ease 0.55s both');
+  }
+
+  // Doubled class to outrank the global `button` rule in
+  // components/_button.scss: a grey fill, a fixed height and padding, and an
+  // !important colour.
+  .music-dock-toggle.music-dock-toggle,
+  .music-dock-skip.music-dock-skip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 100%;
+    line-height: 1;
+    font-weight: normal;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: solid 1px _palette(fg-bold);
+      outline-offset: 3px;
+    }
+  }
+
+  .music-dock-toggle.music-dock-toggle {
+    width: 52px;
+    height: 52px;
+    font-size: 1em;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: solid 1px rgba(255, 255, 255, 0.55);
+    color: _palette(fg-bold) !important;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.18);
+    }
+
+    // A play triangle's visual centre sits left of its box.
+    .fa-play {
+      margin-left: 0.15em;
+    }
+  }
+
+  // 44px keeps them comfortable to hit on a phone.
+  .music-dock-skip.music-dock-skip {
+    width: 44px;
+    height: 44px;
+    font-size: 0.85em;
+    background-color: transparent;
+    border: 0;
+    color: _palette(fg) !important;
+
+    &:hover {
+      background-color: _palette(border-bg);
+      color: _palette(fg-bold) !important;
+    }
+  }
+
+  // They follow the flying button out from behind it.
+  .music-dock-previous {
+    @include vendor('animation', 'music-dock-previous 0.3s ease 0.7s both');
+  }
+
+  .music-dock-next {
+    @include vendor('animation', 'music-dock-next 0.3s ease 0.7s both');
+  }
+
+  .music-dock-fly {
+    display: inline-flex;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:before,
+    .music-dock-previous,
+    .music-dock-next {
+      @include vendor('animation', 'none');
+    }
+  }
+}
+
+@keyframes music-dock-pill {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes music-dock-previous {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+@keyframes music-dock-next {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
